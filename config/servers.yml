@@ -1,0 +1,5 @@
+# Dynamic server list
+servers:
+  - mac: "12:78:01:b1:e1:ac"
+    ip: "192.168.219.47"
+    timeout: 20
