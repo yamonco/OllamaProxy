@@ -1,59 +1,79 @@
 # Ollama On-Demand Proxy
 
-A lightweight reverse proxy that wakes target servers on demand and forwards requests to the Ollama API. Server information is read from `config/servers.yml` for every request so updates require no rebuilds.
+Ollama On-Demand Proxy is a minimal reverse proxy designed specifically for self-hosted Ollama servers. It wakes target machines via Wake-on-LAN when a request arrives and transparently forwards the call to the Ollama API once the host is ready. The proxy checks the server list on every request, so you can add or remove machines without rebuilding containers.
 
-## Features
-- Dynamic server list loaded from YAML
-- Wake-on-LAN with health checks
-- Optional bearer token authentication
-- Maintenance mode responses
-- Docker Compose configuration with Traefik labels
+## Key Features
+- **Dynamic server configuration** – server information lives in `config/servers.yml` and is reloaded for each request.
+- **Wake-on-LAN with health checks** – automatically power on targets and wait until the API responds.
+- **Bearer token authentication** – protect the proxy with an optional API token.
+- **Maintenance mode** – instantly return a 503 message when the service is offline.
+- **Traefik integration** – labels and network settings work out of the box with Traefik reverse proxy.
+- **Docker or native execution** – run via Docker Compose or directly with Python 3.
 
-## Prerequisites
-- Docker and Docker Compose
-- Alternatively Python 3.11 if running directly
+## Advantages
+- **Zero rebuilds for config changes** – update `servers.yml` or `.env` and restart only the container.
+- **Lightweight** – small codebase with minimal dependencies.
+- **Automated startup** – ensures hosts are awake before forwarding requests.
+- **Compatible with existing Ollama clients** – acts as a drop-in HTTP endpoint.
 
-## Setup
-1. Clone this repository.
-2. Copy `.env.example` to `.env` and adjust the settings.
-3. Edit `config/servers.yml` to list the machines (MAC address, IP and timeout).
+## Directory Layout
+```
+.
+├── proxy.py              # application entry point
+├── Dockerfile            # container build
+├── docker-compose.yml    # sample compose file
+├── config/servers.yml    # list of target servers
+├── .env.example          # environment template
+└── README.md
+```
 
-## Configuration
-### Environment variables
-The `.env` file controls proxy behaviour. Key options include:
-- `BIND_ADDRESS` – address the proxy listens on
-- `ENABLE_AUTH` – enable bearer token authentication
-- `API_AUTH_TOKEN` – token checked when auth is enabled
-- `ATTACH_TRAEFIK` and `TRAEFIK_NETWORK` – configure Traefik integration
-- `INTERNAL_NETWORK` – name of the internal Docker network
-- `OLLAMA_HOST`/`OLLAMA_PORT` – host and port for Traefik routing
-- `WOL_RETRY_DELAY`/`WOL_MAX_RETRIES` – wake-on-LAN retry settings
-- `HEALTH_PATH`/`HEALTH_TIMEOUT` – endpoint and timeout for health checks
-- `REQUEST_TIMEOUT` – total request timeout
-- `MAINTENANCE_MODE` – return a 503 message for all requests
+## Getting Started
+1. **Clone the repository**
+   ```bash
+   git clone https://example.com/ollama-proxy.git
+   cd ollama-proxy
+   ```
+2. **Create your environment file**
+   ```bash
+   cp .env.example .env
+   # edit .env to fit your environment
+   ```
+3. **Edit the server list** in `config/servers.yml` with the MAC address and IP of each machine that runs Ollama.
 
-See `.env.example` for all available variables.
+### Environment Variables
+Each option in `.env` customizes proxy behaviour. Important settings include:
+- `BIND_ADDRESS` – network interface for the proxy (default `0.0.0.0`).
+- `ENABLE_AUTH` and `API_AUTH_TOKEN` – enable and configure bearer token checks.
+- `ATTACH_TRAEFIK`, `TRAEFIK_NETWORK` – connect to an external Traefik network.
+- `INTERNAL_NETWORK` – Docker bridge network name.
+- `OLLAMA_HOST`/`OLLAMA_PORT` – domain and port used by Traefik routing.
+- `WOL_RETRY_DELAY`, `WOL_MAX_RETRIES` – how often and how many times to poll the target server.
+- `HEALTH_PATH`, `HEALTH_TIMEOUT` – endpoint and timeout for readiness checks.
+- `REQUEST_TIMEOUT` – total timeout for proxied requests.
+- `MAINTENANCE_MODE`, `MAINTAIN_MSG` – toggle maintenance mode and customize the response message.
 
-### Server list
-`config/servers.yml` contains an array of servers with their MAC address, IP address and an optional timeout. The proxy will attempt each server in order until one responds as healthy.
+Refer to `.env.example` for a complete list and defaults.
 
-## Running
-### With Docker Compose
+## Running the Proxy
+### Docker Compose
 ```bash
 docker-compose up -d --build
 ```
+This builds the container and starts the proxy on port 5000. Traefik labels are included so the service can be routed by hostname if Traefik is present.
 
-### Directly with Python
+### Direct Execution
 ```bash
 pip install -r requirements.txt
 python proxy.py
 ```
+This starts the Flask app directly for development or lightweight deployments.
 
-## Example request
-After the proxy is running you can query the Ollama API through it:
+## Usage Example
+Assuming the proxy listens on `localhost:5000`:
 ```bash
 curl http://localhost:5000/v1/models
 ```
+The proxy will wake the first server in `servers.yml`, wait for the health check to succeed, and then forward the request to the Ollama API.
 
 ## License
 MIT
