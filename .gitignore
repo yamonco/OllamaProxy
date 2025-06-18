@@ -1,45 +1,45 @@
-# macOS 시스템 파일
+# macOS system files
 .DS_Store
 .AppleDouble
 .LSOverride
 
-# macOS .app 번들
+# macOS .app bundle
 *.app
 *.app/**
 
-# 로그 및 캐시
+# Logs and caches
 *.log
 logs/
 *.pyc
 __pycache__/
 
-# Python 가상환경
+# Python virtual environments
 .venv/
 env/
 venv/
 
-# IDE 설정
+# IDE settings
 .vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
 
-# Platypus 관련 빌드 결과
+# Platypus build artifacts
 SwamaLauncher.app/
 *.xcodeproj
 build/
 
-# 사용자 환경 파일
+# User environment files
 .env
 
 
-# 백업 파일
+# Backup files
 *~
 *.bak
 *.swp
 *.tmp
 
-# 시스템 네트워크 설정 관련
+# System network settings
 *.sock
 *.pid
 
@@ -47,6 +47,6 @@ build/
 *.tar
 docker-compose.override.yml
 
-# Node/Electron 대안 탐색 시
+# Node/Electron alternatives
 node_modules/
 dist/
